@@ -1,11 +1,12 @@
 /*
 Dalton Hammel
+C++	Fall 2021
+Due: 12/8/2021
 Lab Name: Lab 7 Battleship
 
 Description: For this lab you will make a simple battleship game. In this lab, you will need four
-10 x 10 grids (two for the user and two for the computer). The program will begin with
-setup. The program will need to randomly place the computers 5 ships, making sure the
-ships do not overlap or go off the board. 
+10 x 10 grids. The program will begin with setup. The program will need to randomly place the 
+computers 5 ships, making sure the ships do not overlap or go off the board. 
 
 For placing the user’s ships, the user should be able to choose a xy coordinate and a
 direction to place the ship. Again, the program should check to make sure the ship
@@ -653,4 +654,3 @@ bool playAgain(bool win, int wins, int losses)
 		cout << flush;
 		system("CLS");	// clears screen for reprint
 	} while (inputError || thanks);
-}
