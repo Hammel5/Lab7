@@ -35,16 +35,14 @@ well documented with pre/post conditions, and your code is reasonably efficient.
 #include <stdlib.h>
 #include <cmath>
 
-#define pFleet 0
+#define pShips 0
 #define pShots 1
-#define cFleet 2
+#define cShips 2
 #define cShots 3
 
 using namespace std;
 
-bool debugging = false;
-
-void resetGame(char gameBoard[4][10][10]); // 1: player fleet, 2: player shots, 3:computer fleet, 4: computer shots 
+void resetGame(char gameBoard[4][10][10]); // 1: player ships, 2: player shots, 3:computer ships, 4: computer shots 
 void printBoard(char board[10][10]);
 void printIntro();
 void printTransition();
@@ -56,7 +54,8 @@ bool computerFire(char computerShots[10][10], char playerFleet[10][10]);
 bool checkWin(char gameBoard[10][10]);
 bool playAgain(bool win, int wins, int losses);
 
-struct shipType {
+struct shipType
+{
 	string name;
 	int length;
 };
@@ -82,38 +81,41 @@ int main()
 	ship[4].name = "DESTROYER";
 	ship[4].length = 2;
 
-	bool pWin;	// player win
-	bool cWin;	// computer win
+	bool playerWin;	// player win
+	bool computerWin;	// computer win
 	int wins = 0;	// total wins
 	int losses = 0;	// total losses
 
-	do {
-		pWin = false;
-		cWin = false;
+	do 
+	{
+		playerWin = false;
+		computerWin = false;
 
 		printIntro();
 		resetGame(gameBoard);
-		playerSetup(gameBoard[pFleet], ship);
-		computerSetup(gameBoard[cFleet], ship);
+		playerSetup(gameBoard[pShips], ship);
+		computerSetup(gameBoard[cShips], ship);
 		printTransition();
 		do
 		{
-			playerFire(gameBoard[pShots], gameBoard[cFleet]);
-			if (checkWin(gameBoard[cFleet])) // returns true if player won
+			playerFire(gameBoard[pShots], gameBoard[cShips]);
+			if (checkWin(gameBoard[cShips])) // returns true if player won
 			{
-				pWin = true;
+				playerWin = true;
 				wins++;
 			}
 			else
 			{
-				if (computerFire(gameBoard[cShots], gameBoard[pFleet]) || checkWin(gameBoard[pFleet])) // computerFire returns true if player surrenders, check win returns true if computer won
+				if (computerFire(gameBoard[cShots], gameBoard[pShips]) || checkWin(gameBoard[pShips])) // computerFire returns true if player surrenders, check win returns true if computer won
 				{
-					cWin = true;
+					computerWin = true;
 					losses++;
 				}
 			}
-		} while (!pWin && !cWin); // loops until computer or player win
-	} while (playAgain(pWin, wins, losses)); // loops entire game if player responds yes
+		} 
+		while (!playerWin && !computerWin); // loops until computer or player win
+	} 
+	while (playAgain(playerWin, wins, losses)); // loops entire game if player responds yes
 
 	return 0;
 }
@@ -123,32 +125,19 @@ int main()
 // Postcondition :	the indroduction page is printed, cleared after a keystroke, and the ship placement instructions are printed
 void printIntro()
 {
-	cout << "\t /$$$$$$$   /$$$$$$  /$$$$$$$$ /$$$$$$$$ /$$       /$$$$$$$$  /$$$$$$  /$$   /$$ /$$$$$$ /$$$$$$$ \n";
-	cout << "\t| $$__  $$ /$$__  $$|__  $$__/|__  $$__/| $$      | $$_____/ /$$__  $$| $$  | $$|_  $$_/| $$__  $$\n";
-	cout << "\t| $$  \\ $$| $$  \\ $$   | $$      | $$   | $$      | $$      | $$  \\__/| $$  | $$  | $$  | $$  \\ $$\n";
-	cout << "\t| $$$$$$$ | $$$$$$$$   | $$      | $$   | $$      | $$$$$   |  $$$$$$ | $$$$$$$$  | $$  | $$$$$$$/\n";
-	cout << "\t| $$__  $$| $$__  $$   | $$      | $$   | $$      | $$__/    \\____  $$| $$__  $$  | $$  | $$____/ \n";
-	cout << "\t| $$  \\ $$| $$  | $$   | $$      | $$   | $$      | $$       /$$  \\ $$| $$  | $$  | $$  | $$      \n";
-	cout << "\t| $$$$$$$/| $$  | $$   | $$      | $$   | $$$$$$$$| $$$$$$$$|  $$$$$$/| $$  | $$ /$$$$$$| $$      \n";
-	cout << "\t|_______/ |__/  |__/   |__/      |__/   |________/|________/ \\______/ |__/  |__/|______/|__/      \n\n";
-	cout << "------------------------------------------------------------------------------------------------------------------\n\n";
+	cout << "\t  BATTLESHIP \n\n";
 	cout << "\t- This is a strategy type guessing game where you will test your skills against the computer.\n";
 	cout << "\t- First you will each place a fleet of 5 ships on a game board concealed from the other.\n";
 	cout << "\t- You will then alternate turns firing shots at the other player's ships.\n";
-	cout << "\t- The objective of the game: destroy the opposing player's fleet before yours is sunk.\n\n\n\n";
+	cout << "\t- The objective of the game: destroy the opposing player's fleet before yours is sunk.\n\n";
 
 	cout << flush;
 	system("PAUSE");	// waits for keystroke
 	system("CLS");		// clears screen
 
-	cout << "\t ____ _____  _    ____ _____   _       ____  _                  _____ _           _   \n";
-	cout << "\t/ ___|_   _|/ \\  / ___| ____| / |  _  |  _ \\| | __ _  ___ ___  |  ___| | ___  ___| |_ \n";
-	cout << "\t\\___ \\ | | / _ \\| |  _|  _|   | | (_) | |_) | |/ _` |/ __/ _ \\ | |_  | |/ _ \\/ _ \\ __|\n";
-	cout << "\t ___) || |/ ___ \\ |_| | |___  | |  _  |  __/| | (_| | (_|  __/ |  _| | |  __/  __/ |_ \n";
-	cout << "\t|____/ |_/_/   \\_\\____|_____| |_| (_) |_|   |_|\\__,_|\\___\\___| |_|   |_|\\___|\\___|\\__|\n\n";
-	cout << "------------------------------------------------------------------------------------------------------\n\n";
-	cout << "\t\t1. Enter the coordinate points of each ship placement. (1-10)\n\n";
-	cout << "\t\t2. Enter the direction to place the ship. (U-D-L-R)\n\n\n\n";
+	cout << "\t\t   SHIP PLACEMENT \n\n";
+	cout << "\t\t1. Enter the coordinate points of each ship placement. (1-10)\n";
+	cout << "\t\t2. Enter the direction to place the ship. (U-D-L-R)\n\n";
 
 	cout << flush;
 	system("PAUSE");	// waits for keystroke
@@ -159,14 +148,9 @@ void printIntro()
 // Postcondition :	the transition page and firing instructions are printed, then cleared after keystroke
 void printTransition()
 {
-	cout << "\t ____ _____  _    ____ _____   ____           _   _   _             _    _ \n";
-	cout << "\t/ ___|_   _|/ \\  / ___| ____| |___ \\   _     / \\ | |_| |_ __ _  ___| | _| |\n";
-	cout << "\t\\___ \\ | | / _ \\| |  _|  _|     __) | (_)   / _ \\| __| __/ _` |/ __| |/ / |\n";
-	cout << "\t ___) || |/ ___ \\ |_| | |___   / __/   _   / ___ \\ |_| || (_| | (__|   <|_|\n";
-	cout << "\t|____/ |_/_/   \\_\\____|_____| |_____| (_) /_/   \\_\\__|\\__\\__,_|\\___|_|\\_(_)\n\n";
-	cout << "------------------------------------------------------------------------------------------\n\n";
-	cout << "\t\t1. Enter the target coordinate to fire upon. (1-10)\n\n";
-	cout << "\t\t2. View the computers shot upon your fleet.\n\n\n\n";
+	cout << "\t\t   ATTACK \n\n";
+	cout << "\t\t1. Enter the target coordinate to fire upon. (1-10)\n";
+	cout << "\t\t2. View the computers shot upon your fleet.\n\n";
 
 	cout << flush;
 	system("PAUSE");
@@ -397,16 +381,6 @@ void computerSetup(char gameBoard[10][10], struct shipType ship[5])
 
 		if (!(placeShip(x, y, ship[i].length, direction, '#', gameBoard))) i = i - 1; // repeats ship type if the space is already occupied
 	}
-
-	//Debugging Printout of computers fleet board
-	if (debugging)
-	{
-		cout << "Computer Fleet: \n";
-		printBoard(gameBoard);
-		cout << flush;
-		system("PAUSE");
-		system("CLS");
-	}
 }
 
 // Precondition :	using namespace std, the iostream library is included, the player shots board (2 diminsional character array 10*10) is passed by reference,
@@ -491,13 +465,6 @@ void playerFire(char playerShots[10][10], char computerFleet[10][10])
 			if (computerFleet[x - 1][y - 1] == 'H') cout << "HIT!"; // prints resuts HIT/MISS after each
 			else cout << "MISS!";
 
-			//debugging printout of player shots on computer fleet board
-			if (debugging)
-			{
-				cout << "\n\nComputer Fleet:\n";
-				printBoard(computerFleet);
-			}
-
 			cout << endl << endl << flush;
 			system("PAUSE"); // waits for keystroke to continue
 			break;
@@ -537,7 +504,8 @@ bool computerFire(char computerShots[10][10], char playerFleet[10][10])
 				playerFleet[x][y] = 'M';
 			}
 		}
-	} while (invalidShot);
+	} 
+	while (invalidShot);
 
 
 	string playerInput;
@@ -547,14 +515,6 @@ bool computerFire(char computerShots[10][10], char playerFleet[10][10])
 		printBoard(playerFleet);	// printout of computer's shots on players fleet with hit/miss message
 		if (playerFleet[x][y] == 'H') cout << "\nCOMPUTER HIT!\n\n";
 		else cout << "\nCOMPUTER MISSED!\n\n";
-
-		// debugging printout of computer shots board
-		if (debugging)
-		{
-			cout << "\n\nComputer Shots:\n";
-			printBoard(computerShots);
-			cout << endl << endl;
-		}
 
 		if (inputError) cout << "\t\t\t\t\t[Invalid Response: Y/N]\r";
 		cout << "Surrender? : ";	// asks player if they want to surrender
@@ -574,7 +534,8 @@ bool computerFire(char computerShots[10][10], char playerFleet[10][10])
 		default:
 			inputError = true;
 		}
-	} while (inputError);	// repears if not y/n answer
+	}
+	while (inputError);	// repears if not y/n answer
 }
 
 // Precondition :	a fleet gameboard (2 diminsional character array 10*10, containing ships '#', hits 'H', and misses 'M') is passed by reference.  
@@ -604,28 +565,12 @@ bool playAgain(bool win, int wins, int losses)
 	do {
 		if (win)
 		{
-			cout << "\t /$$    /$$ /$$$$$$  /$$$$$$  /$$$$$$$$  /$$$$$$ /$$$$$$$  /$$    /$$  /$$\n";
-			cout << "\t| $$   | $$|_  $$_/ /$$__  $$|__  $$__//$$__  $$| $$__  $$|  $$   /$$/| $$\n";
-			cout << "\t| $$   | $$  | $$  | $$  \\__/   | $$  | $$  \\ $$| $$  \\ $$ \\  $$ /$$/ | $$\n";
-			cout << "\t|  $$ / $$/  | $$  | $$         | $$  | $$  | $$| $$$$$$$/  \\  $$$$/  | $$\n";
-			cout << "\t \\  $$ $$/   | $$  | $$         | $$  | $$  | $$| $$__  $$   \\  $$/   |__/\n";
-			cout << "\t  \\  $$$/    | $$  | $$    $$   | $$  | $$  | $$| $$  \\ $$    | $$        \n";
-			cout << "\t   \\  $/    /$$$$$$|  $$$$$$/   | $$  |  $$$$$$/| $$  | $$    | $$     /$$\n";
-			cout << "\t    \\_/    |______/ \\______/    |__/   \\______/ |__/  |__/    |__/    |__/\n\n";
-			cout << "------------------------------------------------------------------------------------------\n\n";
-			cout << "\t\t\t\tWINS: " << wins << "\t\tLOSSES: " << losses << endl << endl << endl; // outputs win/loss count
+			cout << "\t VICTORY \n\n";
+			cout << "\t\t\t\t WINS: " << wins << "\t\t LOSSES: " << losses << endl << endl << endl; // outputs win/loss count
 		}
 		else
 		{
-			cout << "\t /$$$$$$$  /$$$$$$$$ /$$$$$$$$ /$$$$$$$$  /$$$$$$  /$$$$$$$$ /$$\n";
-			cout << "\t| $$__  $$| $$_____/| $$_____/| $$_____/ /$$__  $$|__  $$__/| $$\n";
-			cout << "\t| $$  \\ $$| $$      | $$      | $$      | $$  \\ $$   | $$   | $$\n";
-			cout << "\t| $$  | $$| $$$$$   | $$$$$   | $$$$$   | $$$$$$$$   | $$   | $$\n";
-			cout << "\t| $$  | $$| $$__/   | $$__/   | $$__/   | $$__  $$   | $$   |__/\n";
-			cout << "\t| $$  | $$| $$      | $$      | $$      | $$  | $$   | $$       \n";
-			cout << "\t| $$$$$$$/| $$$$$$$$| $$      | $$$$$$$$| $$  | $$   | $$    /$$\n";
-			cout << "\t|_______/ |________/|__/      |________/|__/  |__/   |__/   |__/\n\n";
-			cout << "--------------------------------------------------------------------------------\n\n";
+			cout << "\t DEFEAT \n\n";
 			cout << "\t\t\tWINS: " << wins << "\t\tLOSSES: " << losses << endl << endl << endl;	// outputs win/loss count
 		}
 		if (inputError) cout << "\t\t\t\t\t[Invalid Response: Y/N]\r";	// error message if invalid input on last input
@@ -653,4 +598,6 @@ bool playAgain(bool win, int wins, int losses)
 		}
 		cout << flush;
 		system("CLS");	// clears screen for reprint
-	} while (inputError || thanks);
+	} 
+	while (inputError || thanks);
+}
