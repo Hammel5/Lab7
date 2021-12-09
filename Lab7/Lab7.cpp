@@ -42,17 +42,17 @@ well documented with pre/post conditions, and your code is reasonably efficient.
 
 using namespace std;
 
-void resetGame(char gameBoard[4][10][10]); // 1: player ships, 2: player shots, 3:computer ships, 4: computer shots 
+void Introduction();
+void Transition();
 void printBoard(char board[10][10]);
-void printIntro();
-void printTransition();
 void playerSetup(char gameBoard[10][10], struct shipType ship[5]);
 void computerSetup(char gameBoard[10][10], struct shipType ship[5]);
-bool placeShip(int x, int y, int length, char direction, char shipChar, char gameBoard[10][10]);
+bool placeShips(int x, int y, int length, char direction, char shipChar, char gameBoard[10][10]);
 void playerFire(char playerShots[10][10], char computerFleet[10][10]);
 bool computerFire(char computerShots[10][10], char playerFleet[10][10]);
 bool checkWin(char gameBoard[10][10]);
 bool playAgain(bool win, int wins, int losses);
+void resetGame(char gameBoard[4][10][10]); // 1: player ships, 2: player shots, 3: computer ships, 4: computer shots 
 
 struct shipType
 {
@@ -81,21 +81,21 @@ int main()
 	ship[4].name = "DESTROYER";
 	ship[4].length = 2;
 
-	bool playerWin;	// player win
-	bool computerWin;	// computer win
-	int wins = 0;	// total wins
-	int losses = 0;	// total losses
+	bool playerWin;
+	bool computerWin;
+	int wins = 0;
+	int losses = 0;
 
 	do 
 	{
 		playerWin = false;
 		computerWin = false;
 
-		printIntro();
+		Introduction();
 		resetGame(gameBoard);
 		playerSetup(gameBoard[pShips], ship);
 		computerSetup(gameBoard[cShips], ship);
-		printTransition();
+		Transition();
 		do
 		{
 			playerFire(gameBoard[pShots], gameBoard[cShips]);
@@ -106,7 +106,7 @@ int main()
 			}
 			else
 			{
-				if (computerFire(gameBoard[cShots], gameBoard[pShips]) || checkWin(gameBoard[pShips])) // computerFire returns true if player surrenders, check win returns true if computer won
+				if (computerFire(gameBoard[cShots], gameBoard[pShips]) || checkWin(gameBoard[pShips]))
 				{
 					computerWin = true;
 					losses++;
@@ -115,38 +115,37 @@ int main()
 		} 
 		while (!playerWin && !computerWin); // loops until computer or player win
 	} 
-	while (playAgain(playerWin, wins, losses)); // loops entire game if player responds yes
+	while (playAgain(playerWin, wins, losses));
 
 	return 0;
 }
 
-
-// Precondition :	using namespace std, the iostream library is included
-// Postcondition :	the indroduction page is printed, cleared after a keystroke, and the ship placement instructions are printed
-void printIntro()
+// Precondition :	None
+// Postcondition :	The intro page is displayed, and the ship placement instructions are displayed after
+void Introduction()
 {
 	cout << "\t  BATTLESHIP \n\n";
-	cout << "\t- This is a strategy type guessing game where you will test your skills against the computer.\n";
-	cout << "\t- First you will each place a fleet of 5 ships on a game board concealed from the other.\n";
-	cout << "\t- You will then alternate turns firing shots at the other player's ships.\n";
-	cout << "\t- The objective of the game: destroy the opposing player's fleet before yours is sunk.\n\n";
+	cout << "\t  This is a strategy game where you will test your skills against the computer.\n";
+	cout << "\t  First you will place a fleet of 5 ships on the gameboard \n";
+	cout << "\t  You will then alternate turns firing shots at the other player's ships.\n";
+	cout << "\t  The objective of the game: destroy all of the opponent's ships before they sink yours.\n\n";
 
 	cout << flush;
-	system("PAUSE");	// waits for keystroke
-	system("CLS");		// clears screen
+	system("PAUSE");	
+	system("CLS");		
 
 	cout << "\t\t   SHIP PLACEMENT \n\n";
 	cout << "\t\t1. Enter the coordinate points of each ship placement. (1-10)\n";
 	cout << "\t\t2. Enter the direction to place the ship. (U-D-L-R)\n\n";
 
 	cout << flush;
-	system("PAUSE");	// waits for keystroke
-	system("CLS");		// clears screen
+	system("PAUSE");	
+	system("CLS");		
 }
 
 // Precondition :	using namespace std, the iostream library is included
 // Postcondition :	the transition page and firing instructions are printed, then cleared after keystroke
-void printTransition()
+void Transition()
 {
 	cout << "\t\t   ATTACK \n\n";
 	cout << "\t\t1. Enter the target coordinate to fire upon. (1-10)\n";
@@ -157,17 +156,15 @@ void printTransition()
 	system("CLS");
 }
 
-// Precondition :	a 3 diminsional character array 4*10*10 is passed by reference
-// Postcondition :	the game boards are set to all "~" to represent water
 void resetGame(char gameBoard[4][10][10])
 {
-	for (int z = 0; z < 4; z++)
+	for (int board = 0; board < 4; board++)
 	{
-		for (int y = 0; y < 10; y++)
+		for (int column = 0; column < 10; column++)
 		{
-			for (int x = 0; x < 10; x++)
+			for (int row = 0; row < 10; row++)
 			{
-				gameBoard[z][x][y] = '~';
+				gameBoard[board][row][column] = '~';
 			}
 		}
 	}
@@ -178,61 +175,54 @@ void resetGame(char gameBoard[4][10][10])
 void printBoard(char gameBoard[10][10])
 {
 	cout << "   1 2 3 4 5 6 7 8 9 10\n"; // x axis label
-	for (int y = 0; y < 10; y++)
+	for (int column = 0; column < 10; column++)
 	{
-		cout << setw(2) << y + 1; // y axis laebel
-		for (int x = 0; x < 10; x++)
+		cout << setw(2) << column + 1; // y axis laebel
+		for (int row = 0; row < 10; row++)
 		{
-			cout << " " << gameBoard[x][y];
+			cout << " " << gameBoard[row][column];
 		}
 		cout << endl;
 	}
 }
 
-// Precondition :	integer coordinates x&y (1-10) are passed as parameters, a direction character(U,u,D,d,L,l,R,r) is passed by parameter,
-//					a character to be printed to represent the ship is passed as a parameter, one game board (2 diminsional character array 10*10) is passed by reference
-// Postcondition :	the ship placement loaction is first checked for validity and the function should return false if placement is invalid game board should then be modified, 
-//					placing the ship (represented by '#') according to the coordinates, direction, and length.
-bool placeShip(int x, int y, int length, char direction, char shipChar, char gameBoard[10][10])
+
+bool placeShips(int row, int column, int length, char direction, char shipChar, char gameBoard[10][10])
 {
 	switch (direction)
 	{
 	case 'U':
 	case 'u':
-		for (int i = y; i > y - length; i--)
-			if (gameBoard[x][i] == '#' || i < 0) return false; // checks upward ship placement, returns false if already occupied
-		for (int i = y; i > y - length; i--)
-			gameBoard[x][i] = shipChar; // sets gameboard to shipChar at ship placement location
+		for (int i = column; i > column - length; i--)
+			if (gameBoard[row][i] == '#' || i < 0) return false; // checks upward ship placement, returns false if already occupied
+		for (int i = column; i > column - length; i--)
+			gameBoard[row][i] = shipChar; // sets gameboard to shipChar at ship placement location
 		break;
 	case 'D':
 	case 'd':
-		for (int i = y; i < y + length; i++)
-			if (gameBoard[x][i] == '#' || i > 9) return false; // checks downward ship placement, returns false if already occupied
-		for (int i = y; i < y + length; i++)
-			gameBoard[x][i] = shipChar;	// sets gameboard to shipChar at ship placement location
+		for (int i = column; i < column + length; i++)
+			if (gameBoard[row][i] == '#' || i > 9) return false; // checks downward ship placement, returns false if already occupied
+		for (int i = column; i < column + length; i++)
+			gameBoard[row][i] = shipChar;	// sets gameboard to shipChar at ship placement location
 		break;
 	case 'R':
 	case 'r':
-		for (int i = x; i < x + length; i++)
-			if (gameBoard[i][y] == '#' || i > 9) return false; // checks right ship placement, returns false if already occupied
-		for (int i = x; i < x + length; i++)
-			gameBoard[i][y] = shipChar;	// sets gameboard to shipChar at ship placement location
+		for (int i = row; i < row + length; i++)
+			if (gameBoard[i][column] == '#' || i > 9) return false; // checks right ship placement, returns false if already occupied
+		for (int i = row; i < row + length; i++)
+			gameBoard[i][column] = shipChar;	// sets gameboard to shipChar at ship placement location
 		break;
 	case 'L':
 	case 'l':
-		for (int i = x; i > x - length; i--)
-			if (gameBoard[i][y] == '#' || i < 0) return false; // checks left ship placement, returns false if already occupied
-		for (int i = x; i > x - length; i--)
-			gameBoard[i][y] = shipChar;	// sets gameboard to shipChar at ship placement location
+		for (int i = row; i > row - length; i--)
+			if (gameBoard[i][column] == '#' || i < 0) return false; // checks left ship placement, returns false if already occupied
+		for (int i = row; i > row - length; i--)
+			gameBoard[i][column] = shipChar;	// sets gameboard to shipChar at ship placement location
 		break;
 	}
 	return true;
 }
 
-// Precondition :	using namespace std, the iostream library is included, the player fleet board (2 diminsional character array 10*10) is passed by reference,
-//					a struct array of ship names and lengths is passed as a parameter
-// Postcondition :	the player fleet is modified, placing the 5 ship types represented by "#", the player selects the x and y coordinates and direction each ship,
-//					any errors in player entry and or ship placement location should be handled and the player prompted to reenter values.
 void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 {
 	char gameBoardTemp[10][10];	// temporary game board to print placement crosshair and direction options
@@ -268,22 +258,22 @@ void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 				{
 					inputError = false;
 					spaceOccupied = true;
-					for (int y = 0; y < 10; y++) // checks evey possible placement loaction and direction in x coordinate selection
+					for (int column = 0; column < 10; column++) // checks evey possible placement loaction and direction in x coordinate selection
 					{
-						if (placeShip(xCoord - 1, y, ship[i].length, 'U', '~', gameBoard) ||
-							placeShip(xCoord - 1, y, ship[i].length, 'D', '~', gameBoard) ||
-							placeShip(xCoord - 1, y, ship[i].length, 'L', '~', gameBoard) ||
-							placeShip(xCoord - 1, y, ship[i].length, 'R', '~', gameBoard))
+						if (placeShips(xCoord - 1, column, ship[i].length, 'U', '~', gameBoard) ||
+							placeShips(xCoord - 1, column, ship[i].length, 'D', '~', gameBoard) ||
+							placeShips(xCoord - 1, column, ship[i].length, 'L', '~', gameBoard) ||
+							placeShips(xCoord - 1, column, ship[i].length, 'R', '~', gameBoard))
 						{
 							spaceOccupied = false;
 						}
 					}
 				}
 
-				if (inputError || spaceOccupied) j = j - 1;	// repeeats y input case
+				if (inputError || spaceOccupied) j = j - 1;	// repeats y input case
 				else
 				{
-					for (int y = 0; y < 10; y++) if (gameBoardTemp[xCoord - 1][y] == '~') gameBoardTemp[xCoord - 1][y] = '|'; // prints vertical crosshair on temp board
+					for (int column = 0; column < 10; column++) if (gameBoardTemp[xCoord - 1][column] == '~') gameBoardTemp[xCoord - 1][column] = '|'; // prints vertical crosshair on temp board
 				}
 				break;
 			case 1: // y coordinate input
@@ -301,10 +291,10 @@ void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 				else
 				{
 					inputError = false;
-					if (placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'U', '~', gameBoard) ||
-						placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'D', '~', gameBoard) ||
-						placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'L', '~', gameBoard) ||
-						placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'R', '~', gameBoard))		// checks if placement is possible in any direction at coordinates
+					if (placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'U', '~', gameBoard) ||
+						placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'D', '~', gameBoard) ||
+						placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'L', '~', gameBoard) ||
+						placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'R', '~', gameBoard))		// checks if placement is possible in any direction at coordinates
 					{
 						spaceOccupied = false;
 					}
@@ -315,10 +305,10 @@ void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 				else
 				{
 					for (int x = 0; x < 10; x++) if (gameBoardTemp[x][yCoord - 1] == '~') gameBoardTemp[x][yCoord - 1] = '-'; // prints horizontal crosshair on temp board
-					placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'U', 'U', gameBoardTemp);
-					placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'D', 'D', gameBoardTemp);
-					placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'L', 'L', gameBoardTemp);
-					placeShip(xCoord - 1, yCoord - 1, ship[i].length, 'R', 'R', gameBoardTemp); // prints UDLR characters in all possible placement directions on the croshair
+					placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'U', 'U', gameBoardTemp);
+					placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'D', 'D', gameBoardTemp);
+					placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'L', 'L', gameBoardTemp);
+					placeShips(xCoord - 1, yCoord - 1, ship[i].length, 'R', 'R', gameBoardTemp); // prints UDLR characters in all possible placement directions on the croshair
 					gameBoardTemp[xCoord - 1][yCoord - 1] = 'X'; // prints X at center of crosshair on temp board
 				}
 				break;
@@ -342,7 +332,7 @@ void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 				else
 				{
 					inputError = false;
-					if (!(placeShip(xCoord - 1, yCoord - 1, ship[i].length, direction, '#', gameBoard))) spaceOccupied = true; // checks if valid placement location, and places ship on player fleet board
+					if (!(placeShips(xCoord - 1, yCoord - 1, ship[i].length, direction, '#', gameBoard))) spaceOccupied = true; // checks if valid placement location, and places ship on player fleet board
 					else spaceOccupied = false;
 				}
 
@@ -355,9 +345,6 @@ void playerSetup(char gameBoard[10][10], struct shipType ship[5])
 	}
 }
 
-// Precondition :	using namespace std, "time.h" is included, the iostream library is included (for debugging printout),  the player computer board board
-//					(2 diminsional character array 10*10) is passed by reference, a struct array of ship names and lengths is passed as a parameter
-// Postcondition :	all five ship types are placed on the computer fleet board are random coordinates and directions, the ships should not overlap or extend beyond the boundaries of the board
 void computerSetup(char gameBoard[10][10], struct shipType ship[5])
 {
 	srand(time(NULL)); // sets random number seed to current time
@@ -379,14 +366,10 @@ void computerSetup(char gameBoard[10][10], struct shipType ship[5])
 			break;
 		}
 
-		if (!(placeShip(x, y, ship[i].length, direction, '#', gameBoard))) i = i - 1; // repeats ship type if the space is already occupied
+		if (!(placeShips(x, y, ship[i].length, direction, '#', gameBoard))) i = i - 1; // repeats ship type if the space is already occupied
 	}
 }
 
-// Precondition :	using namespace std, the iostream library is included, the player shots board (2 diminsional character array 10*10) is passed by reference,
-//					the computer fleet board (2 diminsional character array 10*10) is passed by reference and has been set up to contain the computers ships represented by #
-// Postcondition :	following the player input, the playerShots ans computerFleet gameboard should be marked miss 'M' or hit 'H' if a computer ship was present at the location, 
-//					any errors in player entry and or shot fire location should be handled and the player prompted to reenter values.
 void playerFire(char playerShots[10][10], char computerFleet[10][10])
 {
 	int x;
@@ -474,12 +457,6 @@ void playerFire(char playerShots[10][10], char computerFleet[10][10])
 	}
 }
 
-// Precondition :	using namespace std, the iostream library is included, the computer shots board (2 diminsional character array 10*10) is passed by reference,
-//					the player fleet board (2 diminsional character array 10*10) is passed by reference and has been set up to contain the computers ships represented by #
-// Postcondition :	the computer should generate random target coordinates, check them as a valid location, and the computerShots and playerFleet gameboard should be marked
-//					miss 'M' or hit 'H' if a computer ship was present at the location. After firing, the playerFleet board should be printed displaying the current state of
-//					their fleet. The player shold then be allowed to surrender if desired, handling any invalid user resonses appropriately. The function should return true
-//					if the player whishes to surrender
 bool computerFire(char computerShots[10][10], char playerFleet[10][10])
 {
 	int x;
@@ -538,8 +515,7 @@ bool computerFire(char computerShots[10][10], char playerFleet[10][10])
 	while (inputError);	// repears if not y/n answer
 }
 
-// Precondition :	a fleet gameboard (2 diminsional character array 10*10, containing ships '#', hits 'H', and misses 'M') is passed by reference.  
-// Postcondition :	the array should be checked for the presence of any '#', indicating the fleet is still alive. I
+
 bool checkWin(char gameBoard[10][10])
 {
 	bool win = true;
@@ -554,7 +530,7 @@ bool checkWin(char gameBoard[10][10])
 }
 
 // Precondition :	using namespace std, the iostream library is included, the player 'win' boolean, and wins and losses integers are passed by value
-// Postcondition :	a win or loss screen should be printed accoriding to the 'win' boolean, along with a counter of total wins and losses. The player should then be asked to
+// Postcondition :	a win or loss screen will be displayed accoriding to the 'win' boolean, along with a counter of total wins and losses. The player should then be asked to
 //					play again, if yes, the function should return true. Any error in player input should be handled appropiately. 
 bool playAgain(bool win, int wins, int losses)
 {
